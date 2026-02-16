@@ -272,21 +272,23 @@ YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-# Auto-sign with HID entitlement for gamepad support.
-# This is needed after every rebuild and is safe to run every time.
-# If AMFI is not disabled, the signing still succeeds but the entitlement
-# won't be honored at runtime (gamepad just won't work — everything else is fine).
-if [ -f "$ENTITLEMENTS" ] && [ -f "$BINARY" ]; then
+# Sign the binary for gamepad support (only if AMFI is disabled).
+# With AMFI enabled, restricted entitlements cause macOS to kill the process.
+# Check AMFI status by looking at boot-args.
+AMFI_OFF=false
+if nvram boot-args 2>/dev/null | grep -q "amfi_get_out_of_my_way=1"; then
+    AMFI_OFF=true
+fi
+
+if [ "$AMFI_OFF" = true ] && [ -f "$ENTITLEMENTS" ] && [ -f "$BINARY" ]; then
     codesign --sign - --entitlements "$ENTITLEMENTS" --force "$BINARY" 2>/dev/null
 fi
 
-# Check Screen Recording permission on first run.
-# If not granted, Sunshine will fail silently on capture.
-# We test by checking if the screen capture API returns any displays.
-SCREEN_PERM=$(sqlite3 "$HOME/Library/Application Support/com.apple.TCC/TCC.db" \
-    "SELECT allowed FROM access WHERE service='kTCCServiceScreenCapture' AND client LIKE '%sunshine%'" 2>/dev/null)
+# First-run permission guide.
+# Use a flag file since TCC.db queries are unreliable on newer macOS versions.
+PERM_FLAG="$INSTALL_DIR/.permissions_configured"
 
-if [ -z "$SCREEN_PERM" ] || [ "$SCREEN_PERM" = "0" ]; then
+if [ ! -f "$PERM_FLAG" ]; then
     echo ""
     echo -e "${YELLOW}╔══════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${YELLOW}║  macOS permissions required (first run only)                ║${NC}"
@@ -303,14 +305,16 @@ if [ -z "$SCREEN_PERM" ] || [ "$SCREEN_PERM" = "0" ]; then
     echo ""
     # Open directly to Screen Recording privacy pane
     open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture" 2>/dev/null
-    echo -e "  Grant ${GREEN}Screen Recording${NC} to 'sunshine', then come back here."
+    echo -e "  Grant ${GREEN}Screen Recording${NC} to '${GREEN}Terminal${NC}' (the app running Lumen)."
     echo -e "  Press Enter when done..."
     read -r
     # Open Accessibility pane
     open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility" 2>/dev/null
-    echo -e "  Grant ${GREEN}Accessibility${NC} to 'sunshine', then come back here."
+    echo -e "  Grant ${GREEN}Accessibility${NC} to '${GREEN}Terminal${NC}'."
     echo -e "  Press Enter to start Lumen..."
     read -r
+    # Mark permissions as configured so we don't show this again
+    touch "$PERM_FLAG"
 fi
 
 echo -e "${GREEN}Starting Lumen...${NC}"
