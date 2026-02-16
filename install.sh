@@ -255,7 +255,11 @@ APPS
 ok "Created apps.json"
 
 # Always set up Web UI credentials during install.
-# Previous Sunshine installs may have left credentials the user doesn't remember.
+# Remove any old state file from previous Sunshine installs — paired devices
+# won't carry over anyway since Lumen generates its own TLS certificates.
+STATE_FILE="$CONFIG_DIR/sunshine_state.json"
+rm -f "$STATE_FILE"
+
 echo ""
 info "Setting up Web UI credentials..."
 echo "  Choose a username and password for the Lumen web interface."
@@ -267,10 +271,8 @@ printf "  Password: "
 read -rs LUMEN_PASS
 echo ""
 if [ -n "$LUMEN_USER" ] && [ -n "$LUMEN_PASS" ]; then
-    # Run --creds (exit code is unreliable, so verify the file afterward)
-    "$INSTALL_DIR/sunshine" --creds "$LUMEN_USER" "$LUMEN_PASS" >/dev/null 2>&1 || true
+    "$INSTALL_DIR/sunshine" --creds "$LUMEN_USER" "$LUMEN_PASS" 2>&1 | grep -v "^$"
     # Verify credentials were actually written
-    STATE_FILE="$CONFIG_DIR/sunshine_state.json"
     if [ -f "$STATE_FILE" ] && grep -q "\"username\"" "$STATE_FILE" 2>/dev/null; then
         ok "Web UI credentials saved"
     else
