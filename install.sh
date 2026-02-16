@@ -137,7 +137,6 @@ NUM_CORES=$(sysctl -n hw.ncpu)
 info "Running cmake configuration..."
 cmake -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_WERROR=ON \
-  -DHOMEBREW_ALLOW_FETCHCONTENT=ON \
   -DOPENSSL_ROOT_DIR="$OPENSSL_PREFIX" \
   -DSUNSHINE_ASSETS_DIR=sunshine/assets \
   -DSUNSHINE_BUILD_HOMEBREW=ON \
@@ -252,8 +251,7 @@ if [ ! -f "$CONFIG_DIR/apps.json" ]; then
   },
   "apps": [
     {
-      "name": "Desktop",
-      "image-path": "desktop.png"
+      "name": "Desktop"
     }
   ]
 }
@@ -276,8 +274,11 @@ if [ ! -f "$STATE_FILE" ] || ! grep -q '"username"' "$STATE_FILE" 2>/dev/null; t
     read -rs LUMEN_PASS
     echo ""
     if [ -n "$LUMEN_USER" ] && [ -n "$LUMEN_PASS" ]; then
-        "$INSTALL_DIR/sunshine" --creds "$LUMEN_USER" "$LUMEN_PASS" 2>/dev/null
-        ok "Web UI credentials saved"
+        if "$INSTALL_DIR/sunshine" --creds "$LUMEN_USER" "$LUMEN_PASS" >/dev/null 2>&1; then
+            ok "Web UI credentials saved"
+        else
+            warn "Failed to save credentials. Set them manually: lumen --creds username password"
+        fi
     else
         warn "Skipped — you can set credentials later at https://localhost:47990"
     fi
@@ -293,6 +294,12 @@ BINARY="$INSTALL_DIR/sunshine"
 YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
+
+# Pass through --creds and other CLI flags directly to sunshine
+if [ "${1:-}" = "--creds" ]; then
+    "$BINARY" "$@"
+    exit $?
+fi
 
 # Sign the binary for gamepad support (only if AMFI is disabled).
 # With AMFI enabled, restricted entitlements cause macOS to kill the process.
