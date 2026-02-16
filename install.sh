@@ -211,9 +211,10 @@ if [ -d "$LUMEN_DIR/scripts" ]; then
     ok "Installed example launch scripts"
 fi
 
-# Create default config if it doesn't exist
-if [ ! -f "$CONFIG_DIR/sunshine.conf" ]; then
-    cat > "$CONFIG_DIR/sunshine.conf" << 'CONF'
+# Clean slate: always write fresh config and apps.json.
+# Old configs from previous Sunshine installs can have invalid options
+# (e.g. min_bitrate, wrong output_name) that cause confusing warnings.
+cat > "$CONFIG_DIR/sunshine.conf" << 'CONF'
 # Lumen Configuration
 # See https://github.com/trollzem/Lumen for documentation
 
@@ -237,14 +238,9 @@ upnp = enabled
 # Falls back to software (libx264) if VT is unavailable.
 # encoder = videotoolbox
 CONF
-    ok "Created default config at $CONFIG_DIR/sunshine.conf"
-else
-    ok "Config already exists at $CONFIG_DIR/sunshine.conf (not overwriting)"
-fi
+ok "Config written to $CONFIG_DIR/sunshine.conf"
 
-# Create default apps.json if it doesn't exist
-if [ ! -f "$CONFIG_DIR/apps.json" ]; then
-    cat > "$CONFIG_DIR/apps.json" << 'APPS'
+cat > "$CONFIG_DIR/apps.json" << 'APPS'
 {
   "env": {
     "PATH": "$(PATH):$(HOME)/.local/bin"
@@ -256,32 +252,28 @@ if [ ! -f "$CONFIG_DIR/apps.json" ]; then
   ]
 }
 APPS
-    ok "Created default apps.json"
-fi
+ok "Created apps.json"
 
-# Set up Web UI credentials if none exist
-# The credentials are stored in sunshine_state.json (same as file_state)
-STATE_FILE="$CONFIG_DIR/sunshine_state.json"
-if [ ! -f "$STATE_FILE" ] || ! grep -q '"username"' "$STATE_FILE" 2>/dev/null; then
-    echo ""
-    info "Setting up Web UI credentials..."
-    echo "  Choose a username and password for the Lumen web interface."
-    echo "  (You'll use these to log in at https://localhost:47990)"
-    echo ""
-    printf "  Username: "
-    read -r LUMEN_USER
-    printf "  Password: "
-    read -rs LUMEN_PASS
-    echo ""
-    if [ -n "$LUMEN_USER" ] && [ -n "$LUMEN_PASS" ]; then
-        if "$INSTALL_DIR/sunshine" --creds "$LUMEN_USER" "$LUMEN_PASS" >/dev/null 2>&1; then
-            ok "Web UI credentials saved"
-        else
-            warn "Failed to save credentials. Set them manually: lumen --creds username password"
-        fi
+# Always set up Web UI credentials during install.
+# Previous Sunshine installs may have left credentials the user doesn't remember.
+echo ""
+info "Setting up Web UI credentials..."
+echo "  Choose a username and password for the Lumen web interface."
+echo "  (You'll use these to log in at https://localhost:47990)"
+echo ""
+printf "  Username: "
+read -r LUMEN_USER
+printf "  Password: "
+read -rs LUMEN_PASS
+echo ""
+if [ -n "$LUMEN_USER" ] && [ -n "$LUMEN_PASS" ]; then
+    if "$INSTALL_DIR/sunshine" --creds "$LUMEN_USER" "$LUMEN_PASS" >/dev/null 2>&1; then
+        ok "Web UI credentials saved"
     else
-        warn "Skipped — you can set credentials later at https://localhost:47990"
+        warn "Failed to save credentials. Set them manually: lumen --creds username password"
     fi
+else
+    warn "Skipped — you can set credentials later at https://localhost:47990"
 fi
 
 # Create launcher script that auto-signs for gamepad support on every launch
