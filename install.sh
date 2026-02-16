@@ -138,7 +138,7 @@ info "Running cmake configuration..."
 cmake -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_WERROR=ON \
   -DOPENSSL_ROOT_DIR="$OPENSSL_PREFIX" \
-  -DSUNSHINE_ASSETS_DIR=sunshine/assets \
+  -DSUNSHINE_ASSETS_DIR="$INSTALL_DIR/assets" \
   -DSUNSHINE_BUILD_HOMEBREW=ON \
   -DSUNSHINE_ENABLE_TRAY=ON \
   -DBOOST_USE_STATIC=OFF \
@@ -350,7 +350,7 @@ echo -e "${GREEN}Starting Lumen...${NC}"
 echo "  Web UI: https://localhost:47990"
 echo ""
 
-SUNSHINE_ASSETS_DIR="$INSTALL_DIR/assets" exec "$BINARY" "$@"
+exec "$BINARY" "$@"
 LAUNCHER
 chmod +x "$BIN_DIR/lumen"
 
