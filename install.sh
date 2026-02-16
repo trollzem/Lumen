@@ -192,6 +192,14 @@ if [ -n "$ASSETS_SRC" ]; then
     ok "Installed assets"
 fi
 
+# Ensure web public files (CSS, images, locales) are present.
+# Vite's copyPublicDir can fail when outDir is outside the project root.
+WEB_PUBLIC="$LUMEN_DIR/src_assets/common/assets/web/public"
+if [ -d "$WEB_PUBLIC" ] && [ -d "$INSTALL_DIR/assets/web" ]; then
+    cp -Rf "$WEB_PUBLIC"/* "$INSTALL_DIR/assets/web/"
+    ok "Installed web assets (CSS, images, locales)"
+fi
+
 # Create HID entitlements plist (for gamepad support)
 cat > "$INSTALL_DIR/hid_entitlements.plist" << 'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
