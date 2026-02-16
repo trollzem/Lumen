@@ -1,0 +1,24 @@
+[submodule "third-party/FFmpeg/AMF"]
+	path = third-party/FFmpeg/AMF
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git
+	branch = master
+[submodule "third-party/FFmpeg/x264"]
+	path = third-party/FFmpeg/x264
+	url = https://github.com/LizardByte-infrastructure/x264.git
+	branch = master
+[submodule "third-party/FFmpeg/x265_git"]
+	path = third-party/FFmpeg/x265_git
+	url = https://github.com/LizardByte-infrastructure/x265_git.git
+	branch = stable
+[submodule "third-party/FFmpeg/nv-codec-headers"]
+	path = third-party/FFmpeg/nv-codec-headers
+	url = https://github.com/FFmpeg/nv-codec-headers.git
+	branch = sdk/12.0
+[submodule "third-party/FFmpeg/FFmpeg"]
+	path = third-party/FFmpeg/FFmpeg
+	url = https://github.com/FFmpeg/FFmpeg.git
+	branch = release/8.0
+[submodule "third-party/FFmpeg/SVT-AV1"]
+	path = third-party/FFmpeg/SVT-AV1
+	url = https://github.com/LizardByte-infrastructure/SVT-AV1.git
+	branch = master

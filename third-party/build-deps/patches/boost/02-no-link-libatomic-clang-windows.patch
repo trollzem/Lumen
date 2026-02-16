@@ -1,0 +1,22 @@
+From 434329f8dc7fcfb69cd7565ab0318d86772cea39 Mon Sep 17 00:00:00 2001
+From: Peter Dimov <pdimov@gmail.com>
+Date: Tue, 22 Jul 2025 20:01:21 +0300
+Subject: [PATCH] Do not link to libatomic under any Clang/Windows. Fixes #178.
+
+---
+ libs/uuid/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libs/uuid/CMakeLists.txt b/libs/uuid/CMakeLists.txt
+index f51670f..f9ad64c 100644
+--- a/libs/uuid/CMakeLists.txt
++++ b/libs/uuid/CMakeLists.txt
+@@ -32,7 +32,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+ 
+ endif()
+ 
+-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
++if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT WIN32)
+ 
+   set(_def_linkatomic ON)
+ 

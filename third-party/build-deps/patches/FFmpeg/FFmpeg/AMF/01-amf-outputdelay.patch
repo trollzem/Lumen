@@ -1,0 +1,35 @@
+From e0b38ef1a012ecdf684f80e215970a5cf8ccb5e2 Mon Sep 17 00:00:00 2001
+From: Cameron Gutman <aicommander@gmail.com>
+Date: Sat, 9 Aug 2025 20:40:17 -0500
+Subject: [PATCH] avcodec/amfenc: fix output delayed by one frame
+
+Signed-off-by: Cameron Gutman <aicommander@gmail.com>
+---
+ libavcodec/amfenc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/libavcodec/amfenc.c b/libavcodec/amfenc.c
+index b16b642e4c..fb41aef90a 100644
+--- a/libavcodec/amfenc.c
++++ b/libavcodec/amfenc.c
+@@ -634,7 +634,7 @@ static int amf_submit_frame(AVCodecContext *avctx, AVFrame    *frame, AMFSurface
+         ret = av_fifo_write(ctx->timestamp_list, &frame->pts, 1);
+             if (ret < 0)
+             return ret;
+-        if(ctx->submitted_frame <= ctx->encoded_frame + max_b_frames + 1)
++        if(ctx->submitted_frame <= ctx->encoded_frame + max_b_frames)
+             return AVERROR(EAGAIN); // if frame just submiited - don't poll or wait
+     }
+     return 0;
+@@ -700,7 +700,7 @@ int ff_amf_receive_packet(AVCodecContext *avctx, AVPacket *avpkt)
+         if(ret != AVERROR_EOF){
+             av_frame_free(&frame);
+             if(ret == AVERROR(EAGAIN)){
+-                if(ctx->submitted_frame <= ctx->encoded_frame + max_b_frames + 1) // too soon to poll
++                if(ctx->submitted_frame <= ctx->encoded_frame + max_b_frames) // too soon to poll
+                     return ret;
+             }
+         }
+-- 
+2.50.1.windows.1
+

@@ -1,0 +1,6 @@
+@echo off
+setlocal
+IF NOT DEFINED MSYSTEM set MSYSTEM=@MSYSTEM@
+IF NOT DEFINED MSYS2_PATH_TYPE set MSYS2_PATH_TYPE=inherit
+set CHERE_INVOKING=1
+@MSYS2_EXECUTABLE@ @MSYS2_ARG@ -defterm -here -no-start -shell bash -c %*

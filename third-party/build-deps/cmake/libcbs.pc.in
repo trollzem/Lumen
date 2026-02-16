@@ -1,0 +1,12 @@
+# Based on https://www.scivision.dev/cmake-generate-pkg-config/
+
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix="${prefix}"
+libdir="${prefix}/lib"
+includedir="${prefix}/include"
+
+Name: @PROJECT_NAME@
+Description: @CMAKE_PROJECT_DESCRIPTION@
+Version: @PROJECT_VERSION@
+Cflags: -I"${includedir}"
+Libs: -L"${libdir}" -lcbs

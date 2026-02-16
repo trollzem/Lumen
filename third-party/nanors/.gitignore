@@ -1,0 +1,5 @@
+rst
+bench
+*.o
+*.a
+

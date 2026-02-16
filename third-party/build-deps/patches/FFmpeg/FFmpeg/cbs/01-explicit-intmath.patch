@@ -1,0 +1,39 @@
+Explicitly imports intmath as our subset of sources doesn't have it included
+
+diff --git a/libavcodec/cbs_av1.c b/libavcodec/cbs_av1.c
+index 458381f038..c4a6561706 100644
+--- a/libavcodec/cbs_av1.c
++++ b/libavcodec/cbs_av1.c
+@@ -17,6 +17,7 @@
+  */
+ 
+ #include "libavutil/avassert.h"
++#include "libavutil/intmath.h"
+ #include "libavutil/opt.h"
+ #include "libavutil/pixfmt.h"
+ 
+diff --git a/libavcodec/cbs_h2645.c b/libavcodec/cbs_h2645.c
+index 2de74691cb..e3a5e5b5df 100644
+--- a/libavcodec/cbs_h2645.c
++++ b/libavcodec/cbs_h2645.c
+@@ -19,6 +19,7 @@
+ #include "libavutil/attributes.h"
+ #include "libavutil/avassert.h"
+ #include "libavutil/mem.h"
++#include "libavutil/intmath.h"
+ 
+ #include "bytestream.h"
+ #include "cbs.h"
+diff --git a/libavcodec/cbs_sei_syntax_template.c b/libavcodec/cbs_sei_syntax_template.c
+index 0205bb47aa..7d4d0fd14d 100644
+--- a/libavcodec/cbs_sei_syntax_template.c
++++ b/libavcodec/cbs_sei_syntax_template.c
+@@ -16,6 +16,8 @@
+  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+  */
+ 
++#include "libavutil/intmath.h"
++
+ SEI_FUNC(filler_payload, (CodedBitstreamContext *ctx, RWContext *rw,
+                           SEIRawFillerPayload *current,
+                           SEIMessageState *state))

@@ -1,0 +1,17 @@
+# Build artifacts
+build/
+node_modules/
+
+# macOS
+.DS_Store
+*.dSYM/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary
+*.log
+*.tmp

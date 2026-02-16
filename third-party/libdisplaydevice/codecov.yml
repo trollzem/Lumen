@@ -1,0 +1,21 @@
+---
+codecov:
+  branch: master
+  notify:
+    after_n_builds: 3
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 10%
+
+comment:
+  layout: "diff, flags, files"
+  behavior: default
+  require_changes: false  # if true: only post the comment if coverage changes
+
+ignore:
+  - "tests"
+  - "third-party"

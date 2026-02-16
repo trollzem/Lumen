@@ -1,0 +1,51 @@
+From f82483d343c6452c62ec89a48d22a3a7e565373d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=D9=85=D9=87=D8=AF=D9=8A=20=D8=B4=D9=8A=D9=86=D9=88=D9=86?=
+ =?UTF-8?q?=20=28Mehdi=20Chinoune=29?=
+ <79349457+MehdiChinoune@users.noreply.github.com>
+Date: Sun, 15 Dec 2024 06:13:11 +0100
+Subject: [PATCH] Support building assembly files for mingw-w64 on arm64 with
+ CMake.
+
+---
+ libs/context/CMakeLists.txt | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/libs/context/CMakeLists.txt b/libs/context/CMakeLists.txt
+index b3ad7926..230d434e 100644
+--- a/libs/context/CMakeLists.txt
++++ b/libs/context/CMakeLists.txt
+@@ -89,18 +89,22 @@ if(MSVC)
+   else()
+     set(_default_asm masm)
+   endif()
++elseif(BOOST_CONTEXT_ARCHITECTURE STREQUAL arm64 AND MINGW)
++  set(_default_asm armclang)
+ else()
+   set(_default_asm gas)
+ endif()
+ 
+-set(BOOST_CONTEXT_ASSEMBLER "${_default_asm}" CACHE STRING "Boost.Context assembler (masm, gas, armasm)")
+-set_property(CACHE BOOST_CONTEXT_ASSEMBLER PROPERTY STRINGS masm gas armasm)
++set(BOOST_CONTEXT_ASSEMBLER "${_default_asm}" CACHE STRING "Boost.Context assembler (masm, gas, armasm, armclang)")
++set_property(CACHE BOOST_CONTEXT_ASSEMBLER PROPERTY STRINGS masm gas armasm armclang)
+ 
+ unset(_default_asm)
+ 
+ ## Assembler source suffix
+ 
+-if(BOOST_CONTEXT_BINARY_FORMAT STREQUAL pe)
++if(BOOST_CONTEXT_ASSEMBLER STREQUAL armclang)
++  set(_default_ext .S)
++elseif(BOOST_CONTEXT_BINARY_FORMAT STREQUAL pe)
+   set(_default_ext .asm)
+ elseif(BOOST_CONTEXT_ASSEMBLER STREQUAL gas)
+   set(_default_ext .S)
+@@ -135,7 +139,7 @@ message(STATUS "Boost.Context: "
+ # Enable the right assembler
+ 
+ if(BOOST_CONTEXT_IMPLEMENTATION STREQUAL "fcontext")
+-  if(BOOST_CONTEXT_ASSEMBLER STREQUAL gas)
++  if(BOOST_CONTEXT_ASSEMBLER STREQUAL gas OR BOOST_CONTEXT_ASSEMBLER STREQUAL armclang)
+     if(CMAKE_CXX_PLATFORM_ID MATCHES "Cygwin")
+       enable_language(ASM-ATT)
+     else()
