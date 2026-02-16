@@ -261,6 +261,28 @@ APPS
     ok "Created default apps.json"
 fi
 
+# Set up Web UI credentials if none exist
+# The credentials are stored in sunshine_state.json (same as file_state)
+STATE_FILE="$CONFIG_DIR/sunshine_state.json"
+if [ ! -f "$STATE_FILE" ] || ! grep -q '"username"' "$STATE_FILE" 2>/dev/null; then
+    echo ""
+    info "Setting up Web UI credentials..."
+    echo "  Choose a username and password for the Lumen web interface."
+    echo "  (You'll use these to log in at https://localhost:47990)"
+    echo ""
+    printf "  Username: "
+    read -r LUMEN_USER
+    printf "  Password: "
+    read -rs LUMEN_PASS
+    echo ""
+    if [ -n "$LUMEN_USER" ] && [ -n "$LUMEN_PASS" ]; then
+        "$INSTALL_DIR/sunshine" --creds "$LUMEN_USER" "$LUMEN_PASS" 2>/dev/null
+        ok "Web UI credentials saved"
+    else
+        warn "Skipped — you can set credentials later at https://localhost:47990"
+    fi
+fi
+
 # Create launcher script that auto-signs for gamepad support on every launch
 cat > "$BIN_DIR/lumen" << 'LAUNCHER'
 #!/bin/bash
