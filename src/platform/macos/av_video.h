@@ -37,5 +37,6 @@ typedef bool (^FrameCallbackBlock)(CMSampleBufferRef);
 
 - (void)setFrameWidth:(int)frameWidth frameHeight:(int)frameHeight;
 - (dispatch_semaphore_t)capture:(FrameCallbackBlock)frameCallback;
+- (void)stopCapture;
 
 @end

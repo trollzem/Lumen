@@ -1929,14 +1929,14 @@ namespace stream {
         task_pool.cancel(force_kill);
       });
 
-      BOOST_LOG(debug) << "Waiting for video to end..."sv;
+      BOOST_LOG(info) << "Waiting for video to end..."sv;
       session.videoThread.join();
-      BOOST_LOG(debug) << "Waiting for audio to end..."sv;
+      BOOST_LOG(info) << "Waiting for audio to end..."sv;
       session.audioThread.join();
-      BOOST_LOG(debug) << "Waiting for control to end..."sv;
+      BOOST_LOG(info) << "Waiting for control to end..."sv;
       session.controlEnd.view();
       // Reset input on session stop to avoid stuck repeated keys
-      BOOST_LOG(debug) << "Resetting Input..."sv;
+      BOOST_LOG(info) << "Resetting Input..."sv;
       input::reset(session.input);
 
       // If this is the last session, invoke the platform callbacks

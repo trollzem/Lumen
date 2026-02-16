@@ -64,17 +64,23 @@
   self.captureSignals = [[NSMapTable alloc] init];
 
   AVCaptureScreenInput *screenInput = [[AVCaptureScreenInput alloc] initWithDisplayID:self.displayID];
+  if (!screenInput) {
+    NSLog(@"[AVVideo] Failed to create AVCaptureScreenInput for display %u", self.displayID);
+    return nil;
+  }
   [screenInput setMinFrameDuration:self.minFrameDuration];
   [screenInput setCapturesMouseClicks:NO];
 
   if ([self.session canAddInput:screenInput]) {
     [self.session addInput:screenInput];
   } else {
+    NSLog(@"[AVVideo] Cannot add screen input for display %u to session", self.displayID);
     [screenInput release];
     return nil;
   }
 
   [self.session startRunning];
+  NSLog(@"[AVVideo] Capture session started for display %u (%dx%d)", self.displayID, self.frameWidth, self.frameHeight);
 
   return self;
 }
@@ -132,6 +138,10 @@
 - (void)captureOutput:(AVCaptureOutput *)captureOutput
   didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
          fromConnection:(AVCaptureConnection *)connection {
+  static int frameCount = 0;
+  if (++frameCount <= 3 || frameCount % 300 == 0) {
+    NSLog(@"[AVVideo] Frame %d received from display %u", frameCount, self.displayID);
+  }
   FrameCallbackBlock callback = [self.captureCallbacks objectForKey:connection];
 
   if (callback != nil) {
@@ -146,6 +156,18 @@
         [self.session startRunning];
       }
     }
+  }
+}
+
+- (void)stopCapture {
+  @synchronized(self) {
+    [self.session stopRunning];
+    // Signal all pending captures so waiting threads can exit
+    for (AVCaptureConnection *conn in self.captureSignals.keyEnumerator.allObjects) {
+      dispatch_semaphore_signal([self.captureSignals objectForKey:conn]);
+    }
+    [self.captureCallbacks removeAllObjects];
+    [self.captureSignals removeAllObjects];
   }
 }
 

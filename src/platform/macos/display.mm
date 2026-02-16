@@ -80,7 +80,19 @@ namespace platf {
         return true;
       }];
 
-      dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+      // Poll with timeout instead of waiting forever, so the capture thread
+      // can respond to session shutdown and not deadlock on teardown.
+      while (dispatch_semaphore_wait(signal, dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC)) != 0) {
+        std::shared_ptr<img_t> probe_img;
+        if (!pull_free_image_cb(probe_img)) {
+          // Session is shutting down. Signal the semaphore so we exit the wait.
+          // Don't call stopCapture here — the callback will detect shutdown on its
+          // next invocation and do a clean teardown. Force-stopping AVFoundation
+          // corrupts capture state for this display, causing black frames on reconnect.
+          dispatch_semaphore_signal(signal);
+          break;
+        }
+      }
       return capture_e::ok;
     }
 
@@ -338,8 +350,28 @@ namespace platf {
     }
     BOOST_LOG(info) << "Configuring selected display ("sv << selected_display_id << ") to stream"sv;
 
-    // AVFoundation capture backend — delivers at a fixed frame rate (60fps)
-    // regardless of content changes, unlike SCK which is capped at ~48fps at 4K.
+    // ScreenCaptureKit capture backend — handles virtual display reconnection
+    // reliably. AVFoundation's AVCaptureScreenInput stops delivering frames
+    // when a virtual display is destroyed and recreated between sessions.
+    if (@available(macOS 12.3, *)) {
+      if ([SCCapture isAvailable]) {
+        auto disp = std::make_shared<sc_display_t>();
+        disp->display_id = selected_display_id;
+        disp->sc_capture = [[SCCapture alloc] initWithDisplay:selected_display_id frameRate:config.framerate captureAudio:NO];
+
+        if (!disp->sc_capture) {
+          BOOST_LOG(error) << "SCCapture setup failed, trying AVFoundation..."sv;
+        } else {
+          disp->width = disp->sc_capture.frameWidth;
+          disp->height = disp->sc_capture.frameHeight;
+          disp->env_width = disp->width;
+          disp->env_height = disp->height;
+          return disp;
+        }
+      }
+    }
+
+    // Fallback: AVFoundation capture backend
     auto disp = std::make_shared<av_display_t>();
     disp->display_id = selected_display_id;
     disp->av_capture = [[AVVideo alloc] initWithDisplay:selected_display_id frameRate:config.framerate];

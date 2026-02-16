@@ -32,9 +32,16 @@ namespace platf {
       uint32_t length = 0;
       void *byteSampleBuffer = TPCircularBufferTail(&av_audio_capture->audioSampleBuffer, &length);
 
+      int wait_count = 0;
       while (length < sample_size * sizeof(float)) {
-        [av_audio_capture.samplesArrivedSignal wait];
+        [av_audio_capture.samplesArrivedSignal lock];
+        [av_audio_capture.samplesArrivedSignal waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+        [av_audio_capture.samplesArrivedSignal unlock];
         byteSampleBuffer = TPCircularBufferTail(&av_audio_capture->audioSampleBuffer, &length);
+        // After 500ms of no data, return timeout so the caller can check shutdown_event
+        if (++wait_count > 5 && length < sample_size * sizeof(float)) {
+          return capture_e::timeout;
+        }
       }
 
       const float *sampleBuffer = (float *) byteSampleBuffer;
@@ -68,12 +75,19 @@ namespace platf {
         TPCircularBuffer *buffer = [sc_audio_capture getAudioBuffer];
         void *byteSampleBuffer = TPCircularBufferTail(buffer, &length);
 
+        int wait_count = 0;
         while (length < sample_size * sizeof(float)) {
           if (!sc_audio_capture.isCapturing) {
             return capture_e::error;
           }
-          [sc_audio_capture.samplesArrivedSignal wait];
+          [sc_audio_capture.samplesArrivedSignal lock];
+          [sc_audio_capture.samplesArrivedSignal waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+          [sc_audio_capture.samplesArrivedSignal unlock];
           byteSampleBuffer = TPCircularBufferTail(buffer, &length);
+          // After 500ms of no data, return timeout so the caller can check shutdown_event
+          if (++wait_count > 5 && length < sample_size * sizeof(float)) {
+            return capture_e::timeout;
+          }
         }
 
         const float *sampleBuffer = (float *) byteSampleBuffer;
