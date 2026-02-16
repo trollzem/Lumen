@@ -1,0 +1,2 @@
+# Minimal Doxyfile for build system compatibility
+PROJECT_NAME = "Lumen"
