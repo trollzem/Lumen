@@ -317,6 +317,12 @@ fi
 
 if [ "$AMFI_OFF" = true ] && [ -f "$ENTITLEMENTS" ] && [ -f "$BINARY" ]; then
     codesign --sign - --entitlements "$ENTITLEMENTS" --force "$BINARY" 2>/dev/null
+    # Also sign vd_helper (virtual display helper) — no HID entitlement needed,
+    # but ad-hoc signing is required for unsigned binaries when AMFI is disabled.
+    VD_HELPER="$INSTALL_DIR/vd_helper"
+    if [ -f "$VD_HELPER" ]; then
+        codesign --sign - --force "$VD_HELPER" 2>/dev/null
+    fi
 fi
 
 # First-run permission guide.

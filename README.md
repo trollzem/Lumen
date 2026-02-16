@@ -186,9 +186,10 @@ macOS restricts the creation of virtual HID devices to prevent malicious softwar
 
 5. **Restart** your Mac normally
 
-6. **Sign the Lumen binary** with the HID entitlement:
+6. **Sign the Lumen binaries** with the HID entitlement:
    ```bash
    codesign --sign - --entitlements ~/.local/share/lumen/hid_entitlements.plist --force ~/.local/share/lumen/sunshine
+   codesign --sign - --force ~/.local/share/lumen/vd_helper
    ```
 
 That's it. The gamepad will now appear in any application as a generic USB controller. You can verify it's working by connecting from Moonlight with a controller and checking System Information > USB.
@@ -196,7 +197,8 @@ That's it. The gamepad will now appear in any application as a generic USB contr
 ### Important Notes
 
 - **AMFI disable persists across reboots** — you only need to do this once
-- **Re-sign after every rebuild** — if you rebuild from source, run the `codesign` command again
+- **Re-sign after every rebuild** — if you rebuild from source, run the `codesign` commands again
+- **The `lumen` launcher auto-signs on every launch** — the manual step above is only needed if you bypass the launcher
 - **To re-enable AMFI later:** boot into Recovery Mode and run `nvram -d boot-args`
 - **Without AMFI disabled, Lumen still works fully** — you just won't have gamepad support. Keyboard, mouse, virtual displays, audio, and all other features work normally.
 - **Security note:** Disabling AMFI reduces one layer of macOS security. Only do this if you understand the implications and need gamepad support.
