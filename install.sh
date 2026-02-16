@@ -267,7 +267,11 @@ printf "  Password: "
 read -rs LUMEN_PASS
 echo ""
 if [ -n "$LUMEN_USER" ] && [ -n "$LUMEN_PASS" ]; then
-    if "$INSTALL_DIR/sunshine" --creds "$LUMEN_USER" "$LUMEN_PASS" >/dev/null 2>&1; then
+    # Run --creds (exit code is unreliable, so verify the file afterward)
+    "$INSTALL_DIR/sunshine" --creds "$LUMEN_USER" "$LUMEN_PASS" >/dev/null 2>&1 || true
+    # Verify credentials were actually written
+    STATE_FILE="$CONFIG_DIR/sunshine_state.json"
+    if [ -f "$STATE_FILE" ] && grep -q "\"username\"" "$STATE_FILE" 2>/dev/null; then
         ok "Web UI credentials saved"
     else
         warn "Failed to save credentials. Set them manually: lumen --creds username password"
