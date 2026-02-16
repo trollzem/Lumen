@@ -17,7 +17,7 @@ fi
 
 # Get the virtual display's origin coordinates
 SCRIPT_DIR="$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")"
-GET_ORIGIN="/Volumes/T7/sunshine/Sunshine/build/get_display_origin"
+GET_ORIGIN="$HOME/.local/share/lumen/get_display_origin"
 
 if [ ! -x "$GET_ORIGIN" ]; then
     echo "get_display_origin not found at $GET_ORIGIN"

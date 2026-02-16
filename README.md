@@ -4,7 +4,7 @@
 
 Lumen is a fork of [Sunshine](https://github.com/LizardByte/Sunshine) that fixes macOS support from the ground up. Stream your Mac's display to any [Moonlight](https://moonlight-stream.org/) client — TV, phone, tablet, another PC — with native system audio, automatic virtual display management, and hardware-accelerated encoding.
 
-Tested on **M4 Mac Mini (16GB RAM)** — **1ms streaming latency** over local network with H.264 VideoToolbox encoding.
+Tested on **M4 Mac Mini (16GB RAM)** — **1ms encode-to-network latency** over local network with H.264 VideoToolbox encoding.
 
 ---
 
@@ -98,7 +98,7 @@ Or if `~/.local/bin` isn't in your PATH:
 ### Pair with Moonlight
 
 1. Open the Lumen web UI at **https://localhost:47990**
-2. Set a username and password on first launch
+2. Log in with the credentials you set during installation
 3. Open Moonlight on your client device
 4. Moonlight will discover Lumen automatically via mDNS
 5. Enter the PIN shown in Moonlight into the Lumen web UI
@@ -118,7 +118,7 @@ Config files live in `~/.config/sunshine/`:
 |------|---------|
 | `sunshine.conf` | Runtime settings (bitrate, audio source, encoder, etc.) |
 | `apps.json` | Applications visible in Moonlight's app list |
-| `credentials/` | Pairing credentials (auto-generated) |
+| `credentials/` | TLS certificates for HTTPS and client pairing (auto-generated) |
 
 ### Key Settings (sunshine.conf)
 
@@ -242,13 +242,14 @@ cmake -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_FLAGS="-I$(brew --prefix openssl@3)/include" \
   ..
 
-make sunshine -j$(sysctl -n hw.ncpu)
+make sunshine web-ui vd_helper -j$(sysctl -n hw.ncpu)
 ```
 
 ### Run
 
 ```bash
-SUNSHINE_ASSETS_DIR=./assets ./sunshine
+cd build
+./sunshine
 ```
 
 ---
@@ -302,7 +303,7 @@ Moonlight Client connects (e.g. 1920x1080@60Hz)
   │    └─ Display appears in System Settings > Displays
   │
   ├─ Video Pipeline
-  │    └─ AVFoundation (AVCaptureScreenInput) captures virtual display at fixed 60fps
+  │    └─ ScreenCaptureKit (SCStream) captures virtual display at client's requested fps
   │    └─ CVPixelBuffer (NV12/BGRA) → VideoToolbox H.264/HEVC hardware encoder
   │    └─ Parallel encode pipeline (capture thread decoupled from encode thread)
   │    └─ Network stream → Moonlight client
@@ -324,7 +325,7 @@ Moonlight Client connects (e.g. 1920x1080@60Hz)
 
 ### What We Changed (Complete List)
 
-#### New Files (7)
+#### New Files (8)
 
 | File | Purpose |
 |------|---------|
@@ -332,8 +333,9 @@ Moonlight Client connects (e.g. 1920x1080@60Hz)
 | `src/platform/macos/virtual_display.h` / `.m` | Virtual display management — spawns vd_helper subprocess, manages lifecycle (create/destroy/get_id) |
 | `src/platform/macos/vd_helper.m` | Standalone subprocess for CGVirtualDisplay — uses private API to create display, SkyLight functions to activate and position it |
 | `src/platform/macos/hid_gamepad.h` / `.m` | Virtual HID gamepad via IOHIDUserDevice — creates system-wide controller with generic VID/PID for SDL compatibility |
+| `src/platform/macos/get_display_origin.m` | Helper utility to query a display's screen coordinates — used by app launch scripts to position windows on the virtual display |
 
-#### Modified Files (13)
+#### Modified Files (14)
 
 | File | Change |
 |------|--------|
