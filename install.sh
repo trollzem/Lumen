@@ -48,6 +48,15 @@ if [ "$ARCH" != "arm64" ]; then
 fi
 ok "Apple Silicon ($ARCH)"
 
+# Check for Xcode Command Line Tools
+if ! xcode-select -p &>/dev/null; then
+    info "Installing Xcode Command Line Tools..."
+    xcode-select --install
+    echo "Please complete the Xcode CLT installation, then run this script again."
+    exit 1
+fi
+ok "Xcode Command Line Tools"
+
 # Check for Homebrew
 if ! command -v brew &> /dev/null; then
     info "Installing Homebrew..."
@@ -60,19 +69,20 @@ ok "Homebrew $(brew --version | head -1 | awk '{print $2}')"
 # ─── Install dependencies ──────────────────────────────────────────────────────
 
 info "Installing build dependencies via Homebrew..."
+info "(This may take a few minutes on first run)"
 
 DEPS=(
-    cmake           # Build system
-    boost           # C++ utility libraries (Asio, Log, Process, etc.)
-    pkg-config      # Library path resolution
-    openssl@3       # TLS/SSL for HTTPS web UI and RTSP
-    opus            # Audio codec for streaming
-    llvm            # Clang/LLVM toolchain
+    cmake           # Build system generator
+    boost           # C++ utility libraries (Asio, Log, Process, Locale, etc.)
+    pkg-config      # Library path resolution for build system
+    openssl@3       # TLS/SSL for HTTPS web UI and RTSP streaming
+    opus            # Audio codec for low-latency streaming
+    llvm            # Clang/LLVM toolchain (required by Sunshine build)
     doxygen         # Documentation generation (build requirement)
     graphviz        # Documentation graphs (build requirement)
-    node            # Web UI build (Vue 3 + Vite)
+    node            # Web UI build toolchain (Vue 3 + Vite)
     icu4c@78        # Unicode support (Boost.Locale dependency)
-    miniupnpc       # UPnP port mapping for NAT traversal
+    miniupnpc       # UPnP port mapping for automatic NAT traversal
 )
 
 for dep in "${DEPS[@]}"; do
@@ -80,7 +90,7 @@ for dep in "${DEPS[@]}"; do
         ok "$dep (already installed)"
     else
         info "Installing $dep..."
-        brew install "$dep"
+        brew install "$dep" 2>&1 | tail -1
         ok "$dep"
     fi
 done
@@ -98,13 +108,21 @@ if [ -z "$SDK_PATH" ] || [ ! -d "$SDK_PATH" ]; then
     fi
 fi
 
-# Verify C++ headers exist in the SDK
+# Verify C++ headers exist in the SDK (this is the key build fix for macOS 15+)
 CXX_HEADERS="$SDK_PATH/usr/include/c++/v1"
 if [ ! -f "$CXX_HEADERS/__config" ]; then
-    error "C++ headers not found at $CXX_HEADERS. Install or update Xcode Command Line Tools."
+    # Try a versioned SDK
+    LATEST_SDK=$(ls -d /Library/Developer/CommandLineTools/SDKs/MacOSX*.sdk 2>/dev/null | sort -V | tail -1)
+    if [ -n "$LATEST_SDK" ] && [ -f "$LATEST_SDK/usr/include/c++/v1/__config" ]; then
+        SDK_PATH="$LATEST_SDK"
+        CXX_HEADERS="$SDK_PATH/usr/include/c++/v1"
+    else
+        error "C++ headers not found. Install or update Xcode Command Line Tools: xcode-select --install"
+    fi
 fi
 
 ok "SDK: $SDK_PATH"
+ok "C++ headers: $CXX_HEADERS"
 
 # ─── Build ──────────────────────────────────────────────────────────────────────
 
@@ -116,6 +134,7 @@ cd "$BUILD_DIR"
 OPENSSL_PREFIX=$(brew --prefix openssl@3)
 NUM_CORES=$(sysctl -n hw.ncpu)
 
+info "Running cmake configuration..."
 cmake -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_WERROR=ON \
   -DHOMEBREW_ALLOW_FETCHCONTENT=ON \
@@ -129,10 +148,16 @@ cmake -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_FLAGS="-I$OPENSSL_PREFIX/include" \
   ..
 
-info "Compiling with $NUM_CORES cores..."
+info "Compiling with $NUM_CORES cores (this may take several minutes)..."
 make sunshine -j"$NUM_CORES"
 
 ok "Build complete"
+
+# Build get_display_origin helper (used by app launch scripts to find virtual display position)
+info "Building display helper tools..."
+clang -framework CoreGraphics -o "$BUILD_DIR/get_display_origin" \
+  "$LUMEN_DIR/src/platform/macos/get_display_origin.m" 2>/dev/null && \
+  ok "get_display_origin" || warn "get_display_origin build failed (non-critical)"
 
 # ─── Install ────────────────────────────────────────────────────────────────────
 
@@ -142,24 +167,33 @@ mkdir -p "$INSTALL_DIR"
 mkdir -p "$BIN_DIR"
 mkdir -p "$CONFIG_DIR/scripts"
 
-# Copy binary and helpers
-cp -f "$BUILD_DIR/sunshine" "$INSTALL_DIR/sunshine"
-if [ -f "$BUILD_DIR/vd_helper" ]; then
-    cp -f "$BUILD_DIR/vd_helper" "$INSTALL_DIR/vd_helper"
-fi
-if [ -f "$BUILD_DIR/get_display_origin" ]; then
-    cp -f "$BUILD_DIR/get_display_origin" "$INSTALL_DIR/get_display_origin"
-fi
+# Copy binary (follow symlinks)
+cp -fL "$BUILD_DIR/sunshine" "$INSTALL_DIR/sunshine" 2>/dev/null || \
+  cp -f "$BUILD_DIR/sunshine-"* "$INSTALL_DIR/sunshine" 2>/dev/null
+
+# Copy helper binaries
+for helper in vd_helper get_display_origin; do
+    if [ -f "$BUILD_DIR/$helper" ]; then
+        cp -f "$BUILD_DIR/$helper" "$INSTALL_DIR/$helper"
+        ok "Installed $helper"
+    fi
+done
 
 # Copy assets
-if [ -d "$BUILD_DIR/assets" ]; then
-    cp -Rf "$BUILD_DIR/assets" "$INSTALL_DIR/assets"
-elif [ -d "$BUILD_DIR/sunshine/assets" ]; then
-    mkdir -p "$INSTALL_DIR/assets"
-    cp -Rf "$BUILD_DIR/sunshine/assets/"* "$INSTALL_DIR/assets/"
+ASSETS_SRC=""
+if [ -d "$BUILD_DIR/sunshine/assets" ]; then
+    ASSETS_SRC="$BUILD_DIR/sunshine/assets"
+elif [ -d "$BUILD_DIR/assets" ]; then
+    ASSETS_SRC="$BUILD_DIR/assets"
 fi
 
-# Copy HID entitlements plist
+if [ -n "$ASSETS_SRC" ]; then
+    rm -rf "$INSTALL_DIR/assets"
+    cp -Rf "$ASSETS_SRC" "$INSTALL_DIR/assets"
+    ok "Installed assets"
+fi
+
+# Create HID entitlements plist (for gamepad support)
 cat > "$INSTALL_DIR/hid_entitlements.plist" << 'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -171,6 +205,13 @@ cat > "$INSTALL_DIR/hid_entitlements.plist" << 'PLIST'
 </plist>
 PLIST
 
+# Copy example launch scripts
+if [ -d "$LUMEN_DIR/scripts" ]; then
+    cp -f "$LUMEN_DIR/scripts/"*.sh "$CONFIG_DIR/scripts/" 2>/dev/null
+    chmod +x "$CONFIG_DIR/scripts/"*.sh 2>/dev/null
+    ok "Installed example launch scripts"
+fi
+
 # Create default config if it doesn't exist
 if [ ! -f "$CONFIG_DIR/sunshine.conf" ]; then
     cat > "$CONFIG_DIR/sunshine.conf" << 'CONF'
@@ -178,18 +219,28 @@ if [ ! -f "$CONFIG_DIR/sunshine.conf" ]; then
 # See https://github.com/trollzem/Lumen for documentation
 
 # Audio: "system" uses ScreenCaptureKit for native system audio capture
+# No extra software needed — captures all desktop audio directly.
 audio_sink = system
 
 # Maximum streaming bitrate (kbps)
+# 80000 (80 Mbps) is good for 4K. Use 40000 for 1080p.
 max_bitrate = 80000
 
-# Virtual display: creates a display matching client resolution on connect
+# Virtual display: "enabled" creates a display matching client resolution on connect.
+# The display is destroyed when the last client disconnects.
+# Set to "disabled" to use a physical display or BetterDisplay instead.
 virtual_display = enabled
 
-# UPnP: automatic port mapping
+# UPnP: automatic port mapping for remote access through NAT
 upnp = enabled
+
+# Encoder: videotoolbox uses Apple Silicon hardware acceleration.
+# Falls back to software (libx264) if VT is unavailable.
+# encoder = videotoolbox
 CONF
     ok "Created default config at $CONFIG_DIR/sunshine.conf"
+else
+    ok "Config already exists at $CONFIG_DIR/sunshine.conf (not overwriting)"
 fi
 
 # Create default apps.json if it doesn't exist
@@ -210,16 +261,37 @@ APPS
     ok "Created default apps.json"
 fi
 
-# Create launcher script
-cat > "$BIN_DIR/lumen" << LAUNCHER
+# Create launcher script that auto-signs for gamepad support on every launch
+cat > "$BIN_DIR/lumen" << 'LAUNCHER'
 #!/bin/bash
-SUNSHINE_ASSETS_DIR="$INSTALL_DIR/assets" exec "$INSTALL_DIR/sunshine" "\$@"
+INSTALL_DIR="$HOME/.local/share/lumen"
+ENTITLEMENTS="$INSTALL_DIR/hid_entitlements.plist"
+BINARY="$INSTALL_DIR/sunshine"
+
+# Auto-sign with HID entitlement for gamepad support.
+# This is needed after every rebuild and is safe to run every time.
+# If AMFI is not disabled, the signing still succeeds but the entitlement
+# won't be honored at runtime (gamepad just won't work — everything else is fine).
+if [ -f "$ENTITLEMENTS" ] && [ -f "$BINARY" ]; then
+    codesign --sign - --entitlements "$ENTITLEMENTS" --force "$BINARY" 2>/dev/null
+fi
+
+SUNSHINE_ASSETS_DIR="$INSTALL_DIR/assets" exec "$BINARY" "$@"
 LAUNCHER
 chmod +x "$BIN_DIR/lumen"
 
-ok "Installed to $INSTALL_DIR"
+ok "Installed launcher to $BIN_DIR/lumen"
 
 # ─── Post-install ───────────────────────────────────────────────────────────────
+
+# Check if AMFI is disabled (for gamepad support info)
+AMFI_STATUS="unknown"
+BOOT_ARGS=$(nvram boot-args 2>/dev/null || echo "")
+if echo "$BOOT_ARGS" | grep -q "amfi_get_out_of_my_way=1"; then
+    AMFI_STATUS="disabled"
+else
+    AMFI_STATUS="enabled"
+fi
 
 echo ""
 echo "  ────────────────────────────────────────────────────"
@@ -227,22 +299,39 @@ echo -e "  ${GREEN}Lumen installed successfully!${NC}"
 echo "  ────────────────────────────────────────────────────"
 echo ""
 echo "  Start Lumen:"
-echo "    lumen"
+echo -e "    ${GREEN}lumen${NC}"
 echo ""
 echo "  Or if ~/.local/bin isn't in your PATH:"
-echo "    ~/.local/bin/lumen"
+echo "    export PATH=\"\$HOME/.local/bin:\$PATH\""
+echo "    lumen"
 echo ""
 echo "  Web UI: https://localhost:47990"
 echo ""
-echo -e "  ${YELLOW}Required macOS permissions:${NC}"
-echo "    1. Screen Recording  (System Settings > Privacy & Security)"
-echo "    2. Accessibility     (System Settings > Privacy & Security)"
+echo -e "  ${YELLOW}Required macOS permissions (grant when prompted):${NC}"
+echo "    1. Screen Recording  → System Settings > Privacy & Security > Screen Recording"
+echo "    2. Accessibility     → System Settings > Privacy & Security > Accessibility"
 echo ""
-echo -e "  ${YELLOW}Optional — Gamepad support:${NC}"
-echo "    Requires AMFI disable (one-time, see README for instructions)."
-echo "    Then run:"
-echo "      codesign --sign - --entitlements $INSTALL_DIR/hid_entitlements.plist --force $INSTALL_DIR/sunshine"
+
+if [ "$AMFI_STATUS" = "disabled" ]; then
+    echo -e "  ${GREEN}Gamepad support: READY${NC}"
+    echo "    AMFI is disabled. The launcher auto-signs with HID entitlements."
+    echo "    Gamepad will work automatically when you connect from Moonlight."
+else
+    echo -e "  ${YELLOW}Gamepad support: NOT CONFIGURED${NC}"
+    echo "    To enable gamepad/controller support, you need to disable AMFI (one-time):"
+    echo ""
+    echo "    1. Shut down your Mac completely"
+    echo "    2. Hold the power button until 'Loading startup options' appears"
+    echo "    3. Select Options > Continue"
+    echo "    4. Open Terminal from the Utilities menu"
+    echo "    5. Run: nvram boot-args=\"amfi_get_out_of_my_way=1\""
+    echo "    6. Restart normally"
+    echo ""
+    echo "    After this one-time setup, gamepad support works automatically."
+    echo "    See README for full details."
+fi
+
 echo ""
-echo "  Config: $CONFIG_DIR/sunshine.conf"
-echo "  Logs:   lumen 2>&1 | tee ~/lumen.log"
+echo "  Config:  $CONFIG_DIR/sunshine.conf"
+echo "  Logs:    lumen 2>&1 | tee ~/lumen.log"
 echo ""

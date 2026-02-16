@@ -1,368 +1,439 @@
-<div align="center">
-  <img src="sunshine.png"  alt="Sunshine icon"/>
-  <h1 align="center">Sunshine</h1>
-  <h4 align="center">Self-hosted game stream host for Moonlight.</h4>
-</div>
+# Lumen
 
-<div align="center">
-  <a href="https://github.com/LizardByte/Sunshine"><img src="https://img.shields.io/github/stars/lizardbyte/sunshine.svg?logo=github&style=for-the-badge" alt="GitHub stars"></a>
-  <a href="https://github.com/LizardByte/Sunshine/releases/latest"><img src="https://img.shields.io/github/downloads/lizardbyte/sunshine/total.svg?style=for-the-badge&logo=github" alt="GitHub Releases"></a>
-  <a href="https://hub.docker.com/r/lizardbyte/sunshine"><img src="https://img.shields.io/docker/pulls/lizardbyte/sunshine.svg?style=for-the-badge&logo=docker" alt="Docker"></a>
-  <a href="https://github.com/LizardByte/Sunshine/pkgs/container/sunshine"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fipitio.github.io%2Fbackage%2FLizardByte%2FSunshine%2Fsunshine.json&query=%24.downloads&label=ghcr%20pulls&style=for-the-badge&logo=github" alt="GHCR"></a>
-  <a href="https://flathub.org/apps/dev.lizardbyte.app.Sunshine"><img src="https://img.shields.io/flathub/downloads/dev.lizardbyte.app.Sunshine?style=for-the-badge&logo=flathub" alt="Flathub installs"></a>
-  <a href="https://flathub.org/apps/dev.lizardbyte.app.Sunshine"><img src="https://img.shields.io/flathub/v/dev.lizardbyte.app.Sunshine?style=for-the-badge&logo=flathub" alt="Flathub Version"></a>
-  <a href="https://github.com/microsoft/winget-pkgs/tree/master/manifests/l/LizardByte/Sunshine"><img src="https://img.shields.io/winget/v/LizardByte.Sunshine?style=for-the-badge&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHuSURBVFhH7ZfNTtRQGIYZiMDwN/IrCAqIhMSNKxcmymVwG+5dcDVsWHgDrtxwCYQVl+BChzDEwSnPY+eQ0sxoOz1mQuBNnpyvTdvz9jun5/SrjfxnJUkyQbMEz2ELduF1l0YUA3QyTrMAa2AnPtyOXsELeAYNyKtV2EC3k3lYgTOwg09ghy/BTp7CKBRV844BOpmmMV2+ySb4BmInG7AKY7AHH+EYqqhZo9PPBG/BVDlOizAD/XQFmnoPXzxRQX8M/CCYS48L6RIc4ygGHK9WGg9HZSZMUNRPVwNJGg5Hg2Qgqh4N3FsDsb6EmgYm07iwwvUxstdxJTwgmILf4CfZ6bb5OHANX8GN5x20IVxnG8ge94pt2xpwU3GnCwayF4Q2G2vgFLzHndFzQdk4q77nNfCdwL28qNyMtmEf3A1/QV5FjDiPWo5jrwf8TWZChTlgJvL4F9QL50/A43qVidTvLcuoM2wDQ1+IkgefgUpLcYwMVBqCKNJA2b0gKNocOIITOIef8C/F/CdMbh/GklynsSawKLHS8d9/B1x2LUqsfFyy3TMsWj5A1cLkotDbYO4JjWWZlZEGv8EbOIR1CAVN2eG8W5oNKgxaeC6DmTJjZs7ixUxpznLPLT+v4sXpoMLcLI3mzFSonDXIEI/M3QCIO4YuimBJ/gAAAABJRU5ErkJggg==" alt="Winget Version"></a>
-  <a href="https://gurubase.io/g/sunshine"><img src="https://img.shields.io/badge/Gurubase-Ask%20Guru-ef1a1b?style=for-the-badge&logo=data:image/jpeg;base64,/9j/2wCEAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDIBCQkJDAsMGA0NGDIhHCEyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMv/AABEIABgAGAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AOLqSO3mlilljido4QGkYDIQEgAn05IH41seFo7aS+uRKlrJci2Y2cd2QImlyOGyQPu7sA8ZxXapAlvpThbPRkv7nTQWhDoIZZRc/XaSAOmcZGOnFfP06XMr3P17F5iqE+Tl1uuvf9Lde55dRW74pit4r61EcdtFdG2U3kVqQY0lyeBgkD5duQOASawqykuV2O6jV9rTU0rXLNjf3Om3QubSXy5QCudoYEEYIIOQR7GnahqV3qk6zXk3mOqhFAUKqqOyqAAByeAKqUUXdrFezhz89lfv1+8KKKKRZ//Z" alt="Gurubase"></a>
-  <a href="https://github.com/LizardByte/Sunshine/actions/workflows/ci.yml?query=branch%3Amaster"><img src="https://img.shields.io/github/actions/workflow/status/lizardbyte/sunshine/ci.yml.svg?branch=master&label=CI%20build&logo=github&style=for-the-badge" alt="GitHub Workflow Status (CI)"></a>
-  <a href="https://github.com/LizardByte/Sunshine/actions/workflows/localize.yml?query=branch%3Amaster"><img src="https://img.shields.io/github/actions/workflow/status/lizardbyte/sunshine/localize.yml.svg?branch=master&label=localize%20build&logo=github&style=for-the-badge" alt="GitHub Workflow Status (localize)"></a>
-  <a href="https://docs.lizardbyte.dev/projects/sunshine"><img src="https://img.shields.io/readthedocs/sunshinestream.svg?label=Docs&style=for-the-badge&logo=readthedocs" alt="Read the Docs"></a>
-  <a href="https://codecov.io/gh/LizardByte/Sunshine"><img src="https://img.shields.io/codecov/c/gh/LizardByte/Sunshine?token=SMGXQ5NVMJ&style=for-the-badge&logo=codecov&label=codecov" alt="Codecov"></a>
-</div>
+**Native macOS game streaming, built for Apple Silicon.**
 
-## ℹ️ About
+Lumen is a fork of [Sunshine](https://github.com/LizardByte/Sunshine) that fixes macOS support from the ground up. Stream your Mac's display to any [Moonlight](https://moonlight-stream.org/) client — TV, phone, tablet, another PC — with native system audio, automatic virtual display management, and hardware-accelerated encoding.
 
-Sunshine is a self-hosted game stream host for Moonlight.
-Offering low-latency, cloud gaming server capabilities with support for AMD, Intel, and Nvidia GPUs for hardware
-encoding. Software encoding is also available. You can connect to Sunshine from any Moonlight client on a variety of
-devices. A web UI is provided to allow configuration, and client pairing, from your favorite web browser. Pair from
-the local server or any mobile device.
+Tested on **M4 Mac Mini (16GB RAM)** — **1ms streaming latency** over local network with H.264 VideoToolbox encoding.
 
-LizardByte has the full documentation hosted on [Read the Docs](https://docs.lizardbyte.dev/projects/sunshine)
+---
 
-* [Stable Docs](https://docs.lizardbyte.dev/projects/sunshine/latest/)
-* [Beta Docs](https://docs.lizardbyte.dev/projects/sunshine/master/)
+## Why Lumen?
 
-## 🎮 Feature Compatibility
+Upstream Sunshine has significant issues on macOS:
 
-<table>
-    <caption id="feature_compatibility">Platform Feature Support</caption>
-    <tr>
-        <th>Feature</th>
-        <th>FreeBSD</th>
-        <th>Linux</th>
-        <th>macOS</th>
-        <th>Windows</th>
-    </tr>
-    <tr>
-        <td colspan="5" align="center"><b>Gamepad Emulation</b><br>
-        What type of gamepads can be emulated on the host.<br>
-        Clients may support other gamepads.
-        </td>
-    </tr>
-    <tr>
-        <td>DualShock / DS4 (PlayStation 4)</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>❌</td>
-        <td>✅</td>
-    </tr>
-    <tr>
-        <td>DualSense / DS5 (PlayStation 5)</td>
-        <td>❌</td>
-        <td>✅</td>
-        <td>❌</td>
-        <td>❌</td>
-    </tr>
-    <tr>
-        <td>Nintendo Switch Pro</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>❌</td>
-        <td>❌</td>
-    </tr>
-    <tr>
-        <td>Xbox 360</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>❌</td>
-        <td>✅</td>
-    </tr>
-    <tr>
-        <td>Xbox One/Series</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>❌</td>
-        <td>❌</td>
-    </tr>
-    <tr>
-        <td colspan="5" align="center"><b>GPU Encoding</b></td>
-    </tr>
-    <tr>
-        <td>AMD/AMF</td>
-        <td>✅ (vaapi)</td>
-        <td>✅ (vaapi)</td>
-        <td>✅ (Video Toolbox)</td>
-        <td>✅</td>
-    </tr>
-    <tr>
-        <td>Intel QuickSync</td>
-        <td>✅ (vaapi)</td>
-        <td>✅ (vaapi)</td>
-        <td>✅ (Video Toolbox)</td>
-        <td>✅</td>
-    </tr>
-    <tr>
-        <td>NVIDIA NVENC</td>
-        <td>✅ (vaapi)</td>
-        <td>✅ (vaapi)</td>
-        <td>✅ (Video Toolbox)</td>
-        <td>✅</td>
-    </tr>
-    <tr>
-        <td colspan="5" align="center"><b>Screen Capture</b></td>
-    </tr>
-    <tr>
-        <td>DXGI</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>✅</td>
-    </tr>
-    <tr>
-        <td>KMS</td>
-        <td>❌</td>
-        <td>✅</td>
-        <td>➖</td>
-        <td>➖</td>
-    </tr>
-    <tr>
-        <td>NVIDIA NvFBC</td>
-        <td>➖</td>
-        <td>🟡</td>
-        <td>➖</td>
-        <td>➖</td>
-    </tr>
-    <tr>
-        <td>&nbsp;&nbsp;↳ X11 Support</td>
-        <td>➖</td>
-        <td>✅</td>
-        <td>➖</td>
-        <td>➖</td>
-    </tr>
-    <tr>
-        <td>&nbsp;&nbsp;↳ Wayland Support</td>
-        <td>➖</td>
-        <td>❌</td>
-        <td>➖</td>
-        <td>➖</td>
-    </tr>
-    <tr>
-        <td>Video Toolbox</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>✅</td>
-        <td>➖</td>
-    </tr>
-    <tr>
-        <td>Wayland</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>➖</td>
-        <td>➖</td>
-    </tr>
-    <tr>
-        <td>Windows.Graphics.Capture</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>🟡</td>
-    </tr>
-    <tr>
-        <td>&nbsp;&nbsp;↳ Portable</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>✅</td>
-    </tr>
-    <tr>
-        <td>&nbsp;&nbsp;↳ Service</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>➖</td>
-        <td>❌</td>
-    </tr>
-    <tr>
-        <td>X11</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>➖</td>
-        <td>➖</td>
-    </tr>
-</table>
+| Problem | Sunshine (upstream) | Lumen |
+|---------|-------------------|-------|
+| **Build on macOS** | Fails with C++ toolchain errors on modern Xcode/CLT | Builds cleanly with automated dependency management |
+| **System audio** | No capture — requires BlackHole virtual audio device | Native ScreenCaptureKit audio — zero-config, no extra software |
+| **Virtual displays** | Manual setup with BetterDisplay ($15 app) | Automatic — creates/destroys virtual displays on connect/disconnect |
+| **Gamepad support** | None on macOS | Virtual HID gamepad via IOHIDUserDevice (works with Dolphin, Steam, etc.) |
+| **H.264 encoding** | All-IDR bug on Apple Silicon (every frame is a keyframe) | Fixed — proper P-frame generation, 3x bandwidth reduction |
+| **Encoder performance** | Capture and encode on same thread | Parallel capture/encode pipeline |
 
-**Legend:** ✅ Supported | 🟡 Partial Support | ❌ Not Yet Supported | ➖ Not Applicable
+---
 
-## 🖥️ System Requirements
+## Features
 
-> [!WARNING]
-> These tables are a work in progress. Do not purchase hardware based on this information.
+- **Zero-config system audio** — ScreenCaptureKit captures all desktop audio natively. No BlackHole, no Soundflower, no virtual audio devices to install or configure.
 
-<table>
-    <caption id="minimum_requirements">Minimum Requirements</caption>
-    <tr>
-        <th>Component</th>
-        <th>Requirement</th>
-    </tr>
-    <tr>
-        <td rowspan="3">GPU</td>
-        <td>AMD: VCE 1.0 or higher, see: <a href="https://github.com/obsproject/obs-amd-encoder/wiki/Hardware-Support">obs-amd hardware support</a></td>
-    </tr>
-    <tr>
-        <td>
-            Intel:<br>
-            &nbsp;&nbsp;FreeBSD/Linux: VAAPI-compatible, see: <a href="https://www.intel.com/content/www/us/en/developer/articles/technical/linuxmedia-vaapi.html">VAAPI hardware support</a><br>
-            &nbsp;&nbsp;Windows: Skylake or newer with QuickSync encoding support
-        </td>
-    </tr>
-    <tr>
-        <td>Nvidia: NVENC enabled cards, see: <a href="https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new">nvenc support matrix</a></td>
-    </tr>
-    <tr>
-        <td rowspan="2">CPU</td>
-        <td>AMD: Ryzen 3 or higher</td>
-    </tr>
-    <tr>
-        <td>Intel: Core i3 or higher</td>
-    </tr>
-    <tr>
-        <td>RAM</td>
-        <td>4GB or more</td>
-    </tr>
-    <tr>
-        <td rowspan="6">OS</td>
-        <td>FreeBSD: 14.3+</td>
-    </tr>
-    <tr>
-        <td>Linux/Debian: 13+ (trixie)</td>
-    </tr>
-    <tr>
-        <td>Linux/Fedora: 41+</td>
-    </tr>
-    <tr>
-        <td>Linux/Ubuntu: 22.04+ (jammy)</td>
-    </tr>
-    <tr>
-        <td>macOS: 14+</td>
-    </tr>
-    <tr>
-        <td>Windows: 11+ (Windows Server does not support virtual gamepads)</td>
-    </tr>
-    <tr>
-        <td rowspan="2">Network</td>
-        <td>Host: 5GHz, 802.11ac</td>
-    </tr>
-    <tr>
-        <td>Client: 5GHz, 802.11ac</td>
-    </tr>
-</table>
+- **Automatic virtual displays** — When a Moonlight client connects, Lumen creates a virtual display matching the client's requested resolution and refresh rate (e.g., 4K@60Hz). When the last client disconnects, the virtual display is destroyed. No third-party display managers needed.
 
-<table>
-    <caption id="4k_suggestions">4k Suggestions</caption>
-    <tr>
-        <th>Component</th>
-        <th>Requirement</th>
-    </tr>
-    <tr>
-        <td rowspan="3">GPU</td>
-        <td>AMD: Video Coding Engine 3.1 or higher</td>
-    </tr>
-    <tr>
-        <td>
-            Intel:<br>
-            &nbsp;&nbsp;FreeBSD/Linux: HD Graphics 510 or higher<br>
-            &nbsp;&nbsp;Windows: Skylake or newer with QuickSync encoding support
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Nvidia:<br>
-            &nbsp;&nbsp;FreeBSD/Linux: GeForce RTX 2000 series or higher<br>
-            &nbsp;&nbsp;Windows: Geforce GTX 1080 or higher
-        </td>
-    </tr>
-    <tr>
-        <td rowspan="2">CPU</td>
-        <td>AMD: Ryzen 5 or higher</td>
-    </tr>
-    <tr>
-        <td>Intel: Core i5 or higher</td>
-    </tr>
-    <tr>
-        <td rowspan="2">Network</td>
-        <td>Host: CAT5e ethernet or better</td>
-    </tr>
-    <tr>
-        <td>Client: CAT5e ethernet or better</td>
-    </tr>
-</table>
+- **Hardware-accelerated encoding** — VideoToolbox H.264 and HEVC encoding with Apple Silicon hardware acceleration. H.264 at 1080p60 encodes in ~15ms on M4 (fits within the 16.67ms frame budget). HEVC available for higher quality at the cost of slightly higher latency (~18ms on M4).
 
-<table>
-    <caption id="hdr_suggestions">HDR Suggestions</caption>
-    <tr>
-        <th>Component</th>
-        <th>Requirement</th>
-    </tr>
-    <tr>
-        <td rowspan="3">GPU</td>
-        <td>AMD: Video Coding Engine 3.4 or higher</td>
-    </tr>
-    <tr>
-        <td>Intel: HD Graphics 730 or higher</td>
-    </tr>
-    <tr>
-        <td>Nvidia: Pascal-based GPU (GTX 10-series) or higher</td>
-    </tr>
-    <tr>
-        <td rowspan="2">CPU</td>
-        <td>AMD: Ryzen 5 or higher</td>
-    </tr>
-    <tr>
-        <td>Intel: Core i5 or higher</td>
-    </tr>
-    <tr>
-        <td rowspan="2">Network</td>
-        <td>Host: CAT5e ethernet or better</td>
-    </tr>
-    <tr>
-        <td>Client: CAT5e ethernet or better</td>
-    </tr>
-</table>
+- **Virtual gamepad** — Creates a system-wide virtual HID gamepad that appears as a real controller to any application. Works with SDL-based games, Dolphin Emulator, Steam, Ryujinx, and more. Requires one-time security configuration (see [Gamepad Setup](#gamepad-setup-optional)).
 
-## ❓ Support
+- **Low latency** — Measured 1ms encode-to-network latency on local network with H.264 VideoToolbox on M4 Mac Mini.
 
-Our support methods are listed in our [LizardByte Docs](https://docs.lizardbyte.dev/latest/about/support.html).
+---
 
-## 💲 Sponsors and Supporters
+## Requirements
 
-<p align="center">
-  <img src='https://cdn.jsdelivr.net/gh/LizardByte/contributors@dist/sponsors.svg' alt="Sponsors"/>
-</p>
+- **macOS 14 (Sonoma) or later** — required for CGVirtualDisplay API
+- **Apple Silicon Mac** (M1/M2/M3/M4) — ARM64 only
+- **Moonlight client** on your target device — [moonlight-stream.org](https://moonlight-stream.org/)
 
-## 👥 Contributors
+---
 
-Thank you to all the contributors who have helped make Sunshine better!
+## Quick Install
 
-### GitHub
+```bash
+git clone https://github.com/trollzem/Lumen.git
+cd Lumen
+./install.sh
+```
 
-<p align="center">
-  <img src='https://cdn.jsdelivr.net/gh/LizardByte/contributors@dist/github.Sunshine.svg' alt="GitHub contributors"/>
-</p>
+The install script handles everything:
+1. Checks macOS version and architecture
+2. Installs Homebrew (if not present)
+3. Installs all build dependencies with correct versions:
+   - `cmake` — build system
+   - `boost` — C++ utility libraries (Asio, Log, Process, Locale)
+   - `pkg-config` — library path resolution
+   - `openssl@3` — TLS/SSL for HTTPS web UI and RTSP
+   - `opus` — audio codec for streaming
+   - `llvm` — Clang/LLVM toolchain
+   - `doxygen` — documentation generation (build requirement)
+   - `graphviz` — documentation graphs (build requirement)
+   - `node` — web UI build (Vue 3 + Vite)
+   - `icu4c@78` — Unicode support (Boost.Locale dependency)
+   - `miniupnpc` — UPnP port mapping for NAT traversal
+4. Detects the correct macOS SDK path and C++ header location
+5. Configures cmake with all necessary flags (see [macOS Build Fixes](#macos-build-fixes) for why this is needed)
+6. Builds from source with all CPU cores
+7. Installs the binary, virtual display helper, and assets to `~/.local/share/lumen/`
+8. Sets up default configuration in `~/.config/sunshine/`
+9. Creates a `lumen` launch command in `~/.local/bin/`
 
-### CrowdIn
+After installation, grant these macOS permissions when prompted:
+- **Screen Recording** (System Settings > Privacy & Security > Screen Recording)
+- **Accessibility** (System Settings > Privacy & Security > Accessibility)
 
-<p align="center">
-  <img src='https://cdn.jsdelivr.net/gh/LizardByte/contributors@dist/crowdin.606145.svg' alt="CrowdIn contributors"/>
-</p>
+---
 
-<div class="section_buttons">
+## Usage
 
-| Previous |                                       Next |
-|:---------|-------------------------------------------:|
-|          | [Getting Started](docs/getting_started.md) |
+### Start Lumen
 
-</div>
+```bash
+lumen
+```
 
-<details style="display: none;">
-  <summary></summary>
-  [TOC]
-</details>
+Or if `~/.local/bin` isn't in your PATH:
+
+```bash
+~/.local/bin/lumen
+```
+
+### Pair with Moonlight
+
+1. Open the Lumen web UI at **https://localhost:47990**
+2. Set a username and password on first launch
+3. Open Moonlight on your client device
+4. Moonlight will discover Lumen automatically via mDNS
+5. Enter the PIN shown in Moonlight into the Lumen web UI
+6. Connect — a virtual display is created automatically at your client's resolution
+
+### Stop Lumen
+
+Press `Ctrl+C` in the terminal, or quit from the system tray icon.
+
+---
+
+## Configuration
+
+Config files live in `~/.config/sunshine/`:
+
+| File | Purpose |
+|------|---------|
+| `sunshine.conf` | Runtime settings (bitrate, audio source, encoder, etc.) |
+| `apps.json` | Applications visible in Moonlight's app list |
+| `credentials/` | Pairing credentials (auto-generated) |
+
+### Key Settings (sunshine.conf)
+
+```ini
+# Audio source — "system" uses ScreenCaptureKit (recommended)
+audio_sink = system
+
+# Maximum streaming bitrate in kbps
+max_bitrate = 80000
+
+# Virtual display — "enabled" creates displays on-demand (recommended)
+virtual_display = enabled
+
+# UPnP port mapping for remote access
+upnp = enabled
+```
+
+### Adding Apps (apps.json)
+
+Apps appear in Moonlight's launcher. Example for Dolphin Emulator:
+
+```json
+{
+  "name": "Dolphin Emulator",
+  "detached": [
+    "~/.config/sunshine/scripts/launch_dolphin.sh"
+  ],
+  "prep-cmd": [
+    {
+      "do": "",
+      "undo": "osascript -e 'tell application \"Dolphin\" to quit'"
+    }
+  ]
+}
+```
+
+Launch scripts can use the virtual display position file (`/tmp/sunshine_vd_id`) to move app windows to the streaming display automatically. See `scripts/launch_dolphin.sh` for an example.
+
+---
+
+## Gamepad Setup (Optional)
+
+Virtual gamepad support requires a one-time security configuration because it uses Apple's IOHIDUserDevice API with a restricted entitlement. **This is only needed if you want gamepad/controller support.** Keyboard and mouse input work without this step.
+
+### Why This Is Needed
+
+macOS restricts the creation of virtual HID devices to prevent malicious software from injecting fake input. Lumen creates a virtual gamepad that appears as a real USB controller to the system — this requires the `com.apple.developer.hid.virtual.device` entitlement, which Apple only allows with AMFI (Apple Mobile File Integrity) disabled.
+
+**SIP (System Integrity Protection) does NOT need to be disabled** — only AMFI. This is a less invasive change that specifically allows ad-hoc signed binaries to use restricted entitlements.
+
+### Steps
+
+1. **Shut down your Mac** completely (not restart)
+
+2. **Boot into Recovery Mode:**
+   - **Apple Silicon:** Hold the **power button** until "Loading startup options" appears
+   - Select **Options** > **Continue**
+
+3. **Open Terminal** from the **Utilities** menu in Recovery Mode
+
+4. **Disable AMFI** (allows restricted entitlements on ad-hoc signed binaries):
+   ```bash
+   nvram boot-args="amfi_get_out_of_my_way=1"
+   ```
+
+5. **Restart** your Mac normally
+
+6. **Sign the Lumen binary** with the HID entitlement:
+   ```bash
+   codesign --sign - --entitlements ~/.local/share/lumen/hid_entitlements.plist --force ~/.local/share/lumen/sunshine
+   ```
+
+That's it. The gamepad will now appear in any application as a generic USB controller. You can verify it's working by connecting from Moonlight with a controller and checking System Information > USB.
+
+### Important Notes
+
+- **AMFI disable persists across reboots** — you only need to do this once
+- **Re-sign after every rebuild** — if you rebuild from source, run the `codesign` command again
+- **To re-enable AMFI later:** boot into Recovery Mode and run `nvram -d boot-args`
+- **Without AMFI disabled, Lumen still works fully** — you just won't have gamepad support. Keyboard, mouse, virtual displays, audio, and all other features work normally.
+- **Security note:** Disabling AMFI reduces one layer of macOS security. Only do this if you understand the implications and need gamepad support.
+
+---
+
+## Building From Source
+
+If you want to build manually instead of using `install.sh`:
+
+### Prerequisites
+
+```bash
+# Install Homebrew if not already installed
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install all build dependencies
+brew install cmake boost pkg-config openssl@3 opus llvm doxygen graphviz node icu4c@78 miniupnpc
+```
+
+### Build
+
+```bash
+cd Lumen
+
+# Detect macOS SDK path
+SDK_PATH=$(xcrun --show-sdk-path)
+
+mkdir -p build && cd build
+
+cmake -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_WERROR=ON \
+  -DHOMEBREW_ALLOW_FETCHCONTENT=ON \
+  -DOPENSSL_ROOT_DIR=$(brew --prefix openssl@3) \
+  -DSUNSHINE_ASSETS_DIR=sunshine/assets \
+  -DSUNSHINE_BUILD_HOMEBREW=ON \
+  -DSUNSHINE_ENABLE_TRAY=ON \
+  -DBOOST_USE_STATIC=OFF \
+  -DCMAKE_OSX_SYSROOT="$SDK_PATH" \
+  -DCMAKE_CXX_FLAGS="-nostdinc++ -cxx-isystem $SDK_PATH/usr/include/c++/v1 -std=gnu++2b -I$(brew --prefix openssl@3)/include" \
+  -DCMAKE_C_FLAGS="-I$(brew --prefix openssl@3)/include" \
+  ..
+
+make sunshine -j$(sysctl -n hw.ncpu)
+```
+
+### Run
+
+```bash
+SUNSHINE_ASSETS_DIR=./assets ./sunshine
+```
+
+---
+
+## Networking
+
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| 47984-47990 | TCP | Control, RTSP, Web UI (HTTPS) |
+| 47998-48010 | UDP | Video/audio streaming |
+| 47990 | HTTPS | Web configuration UI |
+
+Lumen supports **UPnP** for automatic port mapping. For manual port forwarding, open the ports above on your router.
+
+mDNS/DNS-SD is used for automatic discovery on the local network — Moonlight will find Lumen without any configuration.
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| "No screen capture permission" | Grant Screen Recording in System Settings > Privacy & Security |
+| No audio in stream | Ensure `audio_sink = system` in sunshine.conf and Screen Recording permission is granted |
+| Black screen / no video | Check that the virtual display was created (look for "Created virtual display" in logs) |
+| Gamepad not detected | Ensure AMFI is disabled and binary is signed (see [Gamepad Setup](#gamepad-setup-optional)) |
+| High latency (>5ms) | Use H.264 instead of HEVC — H.264 encodes faster on Apple Silicon (~15ms vs ~18ms for 1080p) |
+| Build fails with C++ include errors | The install script handles this automatically. If building manually, ensure `-nostdinc++` and `-cxx-isystem` flags point to your SDK's C++ headers (see [macOS Build Fixes](#macos-build-fixes)). |
+| `libminiupnpc` not found | Run `brew install miniupnpc` |
+| App opens on wrong display | Launch scripts should use `/tmp/sunshine_vd_id` to find the virtual display position. See `scripts/launch_dolphin.sh`. |
+
+### Viewing Logs
+
+Lumen outputs logs to the terminal. To save logs to a file:
+
+```bash
+lumen 2>&1 | tee ~/lumen.log
+```
+
+---
+
+## Technical Details
+
+### Architecture Overview
+
+```
+Moonlight Client connects (e.g. 1920x1080@60Hz)
+  │
+  ├─ Virtual Display created via CGVirtualDisplay (private API, macOS 14+)
+  │    └─ vd_helper subprocess holds display reference
+  │    └─ Display appears in System Settings > Displays
+  │
+  ├─ Video Pipeline
+  │    └─ AVFoundation (AVCaptureScreenInput) captures virtual display at fixed 60fps
+  │    └─ CVPixelBuffer (NV12/BGRA) → VideoToolbox H.264/HEVC hardware encoder
+  │    └─ Parallel encode pipeline (capture thread decoupled from encode thread)
+  │    └─ Network stream → Moonlight client
+  │
+  ├─ Audio Pipeline
+  │    └─ ScreenCaptureKit creates minimal SCStream (64x64@1fps video + audio)
+  │    └─ System audio captured as Float32 PCM (48kHz stereo)
+  │    └─ Non-interleaved → interleaved conversion
+  │    └─ TPCircularBuffer → Opus encoding → Network stream
+  │
+  ├─ Input Pipeline
+  │    └─ Keyboard: Moonlight keycodes → macOS virtual keycodes → CGEventPost
+  │    └─ Mouse: Absolute/relative → CGWarpMouseCursorPosition (virtual display coords)
+  │    └─ Gamepad: IOHIDUserDevice virtual HID reports → SDL/Game Controller framework
+  │
+  └─ Client disconnects
+       └─ Virtual display destroyed (vd_helper SIGTERM'd)
+```
+
+### What We Changed (Complete List)
+
+#### New Files (7)
+
+| File | Purpose |
+|------|---------|
+| `src/platform/macos/sc_audio.h` / `.m` | ScreenCaptureKit system audio capture — creates minimal SCStream for audio, handles non-interleaved→interleaved conversion, uses TPCircularBuffer |
+| `src/platform/macos/virtual_display.h` / `.m` | Virtual display management — spawns vd_helper subprocess, manages lifecycle (create/destroy/get_id) |
+| `src/platform/macos/vd_helper.m` | Standalone subprocess for CGVirtualDisplay — uses private API to create display, SkyLight functions to activate and position it |
+| `src/platform/macos/hid_gamepad.h` / `.m` | Virtual HID gamepad via IOHIDUserDevice — creates system-wide controller with generic VID/PID for SDL compatibility |
+
+#### Modified Files (13)
+
+| File | Change |
+|------|--------|
+| `src/platform/macos/av_audio.m` | Updated AVFoundation device discovery API for macOS 14+ (`AVCaptureDeviceTypeMicrophone`, `AVCaptureDeviceTypeExternal`) with backward compatibility |
+| `src/platform/macos/microphone.mm` | Unified audio source selection: ScreenCaptureKit → BlackHole → AVFoundation fallback chain |
+| `src/platform/macos/display.mm` | Virtual display detection and preferential capture; synthetic dummy frame for encoder probing (avoids capture timeout) |
+| `src/platform/macos/input.mm` | Dynamic virtual display targeting — mouse/keyboard input redirected to virtual display coordinates |
+| `src/platform/macos/sc_capture.h` / `.m` | Added frame caching and re-delivery for ScreenCaptureKit idle-frame handling |
+| `src/video.cpp` | Removed `max_ref_frames=1` for H.264 VT (fixes all-IDR bug); enabled `PARALLEL_ENCODING` flag |
+| `src/config.h` / `.cpp` | Added `virtual_display` config option (`enabled`/`disabled`) |
+| `src/display_device.cpp` / `.h` | Virtual display create/destroy hooks in session lifecycle |
+| `src/platform/common.h` | Declared `virtual_display_create/destroy/get_id` platform functions |
+| `cmake/compile_definitions/macos.cmake` | Added ScreenCaptureKit, IOKit linking; sc_audio, hid_gamepad, virtual_display build targets; vd_helper compilation with ARC |
+| `cmake/dependencies/common.cmake` | Fixed Opus include path (parent directory for `opus/opus_multistream.h`) |
+
+### Virtual Display System (CGVirtualDisplay)
+
+Lumen uses Apple's private `CGVirtualDisplay` API (available on macOS 14+) to create virtual displays on demand. This eliminates the need for third-party tools like BetterDisplay.
+
+**Why a subprocess?** CGVirtualDisplay doesn't work when created directly in the Sunshine process. The TCC (Transparency, Consent, and Control) framework and WindowServer registration require a clean process context. Lumen spawns `vd_helper` as a subprocess that:
+
+1. Creates a `CGVirtualDisplayDescriptor` with the requested resolution
+2. Creates display modes — both native and retina variants (e.g., 3840x2160 native + 1920x1080@2x)
+3. Creates a `CGVirtualDisplay` object and applies the modes
+4. Activates the display via `SLSConfigureDisplayEnabled` (SkyLight private function)
+5. Forces extend mode — macOS may auto-mirror new displays, hiding them from `CGGetActiveDisplayList`
+6. Switches to native 1x mode via `CGDisplaySetDisplayMode` to avoid retina 2x scaling at 4K
+7. Writes the display ID to stdout (read by Sunshine) and `/tmp/sunshine_vd_id` (read by app launch scripts)
+8. Stays alive holding the display reference until SIGTERM
+
+**Physical dimensions matter.** CGVirtualDisplay rejects displays where the pixel density exceeds a threshold relative to the declared physical size. Lumen uses a fixed 27-inch equivalent (597x336mm) which supports up to 4K resolution without rejection.
+
+### ScreenCaptureKit Audio Capture
+
+macOS has no public API for directly capturing system audio output. Previously, this required routing audio through a virtual loopback device like BlackHole. Lumen uses ScreenCaptureKit's audio capture capability instead:
+
+1. Creates a minimal SCStream targeting a 64x64 pixel region at 1fps (minimal CPU/GPU usage)
+2. Enables `capturesAudio = YES` on the stream configuration
+3. Sets `excludesCurrentProcessAudio = YES` to avoid feedback loops
+4. Receives non-interleaved Float32 stereo PCM at 48kHz
+5. Interleaves the L/R channels and writes to a TPCircularBuffer
+6. The Opus encoder reads from the ring buffer for network delivery
+
+This approach requires **Screen Recording permission** (which is needed for video capture anyway) and works on macOS 12.3+.
+
+### VideoToolbox H.264 Fix
+
+On Apple Silicon (confirmed on M4), setting `ReferenceBufferCount=1` (Sunshine's `max_ref_frames=1`) on VideoToolbox's H.264 encoder causes catastrophic behavior: **every frame becomes an IDR keyframe**. P-frames are never produced.
+
+The impact:
+- Each frame is ~300KB instead of ~30KB (10x larger)
+- Actual bitrate is 2-3x the configured maximum
+- Moonlight reports 30%+ "frames dropped by network"
+- Stuttering and frame drops despite low latency
+
+Lumen removes this option for H.264. HEVC is unaffected and retains `max_ref_frames=1`. This single fix dramatically improves streaming quality on Apple Silicon.
+
+### Virtual HID Gamepad
+
+Lumen creates a virtual USB gamepad using `IOHIDUserDeviceCreateWithProperties()`. The device appears as a generic USB gamepad with:
+
+- **VID/PID:** `0x1209`/`0x5853` (generic, not matching any known controller)
+- **Usage Page:** Generic Desktop (0x01), Usage: Joystick (0x04)
+- **Buttons:** 16 digital buttons mapped to standard gamepad layout
+- **Axes:** 4 analog axes (2 sticks) + 2 triggers
+
+**Why generic VID/PID?** SDL (used by most games/emulators) has a list of known Xbox/PlayStation VID/PIDs. When SDL sees a known VID/PID, it assumes the macOS Game Controller framework handles it and skips its own IOKit HID backend. Since virtual HID devices get `IOHIDEventDummyService` (not recognized by Game Controller framework), this creates a dead zone — SDL won't see the controller through either path. Using a generic VID/PID forces SDL to use its IOKit HID backend directly. Games and emulators like Dolphin can then manually map the buttons.
+
+### macOS Build Fixes
+
+Building upstream Sunshine on modern macOS (15+) with Command Line Tools fails due to several issues:
+
+1. **Empty C++ include directory:** The Command Line Tools install at `/Library/Developer/CommandLineTools/usr/include/c++/v1/` contains only a `__cxx_version` marker file. The actual C++ standard library headers are in the SDK at `$SDK_PATH/usr/include/c++/v1/`.
+
+2. **Fix:** CMake flags `-nostdinc++ -cxx-isystem $SDK_PATH/usr/include/c++/v1` tell the compiler to ignore the empty default path and use the SDK headers instead.
+
+3. **OpenSSL headers:** Homebrew installs OpenSSL to a non-standard location (`/opt/homebrew/opt/openssl@3/`). The upstream CMake configuration doesn't add this to the include path on macOS, requiring explicit `-I` flags in both `CMAKE_CXX_FLAGS` and `CMAKE_C_FLAGS`.
+
+4. **Opus include path:** The code uses `#include <opus/opus_multistream.h>` but the Opus pkg-config reports the directory containing the headers directly (without the `opus/` subdirectory). Fixed in `common.cmake` by using the parent directory.
+
+5. **`CMAKE_OSX_SYSROOT`:** Must be set explicitly to the current SDK path to avoid picking up a stale or mismatched SDK.
+
+The install script detects all of these automatically and configures the build correctly.
+
+### Parallel Encoding Pipeline
+
+Lumen enables `PARALLEL_ENCODING` for the VideoToolbox encoder, which decouples the capture and encode threads. Without this flag, frame capture blocks until the previous frame finishes encoding. With it enabled:
+
+- Capture thread delivers frames to a queue continuously
+- Encode thread processes frames from the queue independently
+- This eliminates frame drops caused by encoder stalls and improves overall throughput
+
+---
+
+## Acknowledgments
+
+- [LizardByte/Sunshine](https://github.com/LizardByte/Sunshine) — the upstream project this is forked from
+- [Moonlight](https://moonlight-stream.org/) — the open-source game streaming client
+- [TPCircularBuffer](https://github.com/michaeltyson/TPCircularBuffer) — lock-free ring buffer used for audio delivery
+
+---
+
+## License
+
+Lumen is licensed under the same terms as Sunshine (GPLv3). See [LICENSE](LICENSE) for details.
