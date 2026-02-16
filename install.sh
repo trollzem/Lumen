@@ -148,7 +148,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
   ..
 
 info "Compiling with $NUM_CORES cores (this may take several minutes)..."
-make sunshine web-ui -j"$NUM_CORES"
+make sunshine web-ui vd_helper -j"$NUM_CORES"
 
 ok "Build complete"
 
