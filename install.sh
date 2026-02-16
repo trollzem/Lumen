@@ -268,6 +268,10 @@ INSTALL_DIR="$HOME/.local/share/lumen"
 ENTITLEMENTS="$INSTALL_DIR/hid_entitlements.plist"
 BINARY="$INSTALL_DIR/sunshine"
 
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
 # Auto-sign with HID entitlement for gamepad support.
 # This is needed after every rebuild and is safe to run every time.
 # If AMFI is not disabled, the signing still succeeds but the entitlement
@@ -275,6 +279,43 @@ BINARY="$INSTALL_DIR/sunshine"
 if [ -f "$ENTITLEMENTS" ] && [ -f "$BINARY" ]; then
     codesign --sign - --entitlements "$ENTITLEMENTS" --force "$BINARY" 2>/dev/null
 fi
+
+# Check Screen Recording permission on first run.
+# If not granted, Sunshine will fail silently on capture.
+# We test by checking if the screen capture API returns any displays.
+SCREEN_PERM=$(sqlite3 "$HOME/Library/Application Support/com.apple.TCC/TCC.db" \
+    "SELECT allowed FROM access WHERE service='kTCCServiceScreenCapture' AND client LIKE '%sunshine%'" 2>/dev/null)
+
+if [ -z "$SCREEN_PERM" ] || [ "$SCREEN_PERM" = "0" ]; then
+    echo ""
+    echo -e "${YELLOW}╔══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${YELLOW}║  macOS permissions required (first run only)                ║${NC}"
+    echo -e "${YELLOW}╠══════════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${YELLOW}║                                                              ║${NC}"
+    echo -e "${YELLOW}║  Lumen needs Screen Recording and Accessibility permissions. ║${NC}"
+    echo -e "${YELLOW}║  macOS will prompt you, or grant them manually:              ║${NC}"
+    echo -e "${YELLOW}║                                                              ║${NC}"
+    echo -e "${YELLOW}║  1. Screen Recording (required for video + audio)            ║${NC}"
+    echo -e "${YELLOW}║  2. Accessibility (required for keyboard/mouse input)        ║${NC}"
+    echo -e "${YELLOW}║                                                              ║${NC}"
+    echo -e "${YELLOW}║  Opening System Settings now...                              ║${NC}"
+    echo -e "${YELLOW}╚══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    # Open directly to Screen Recording privacy pane
+    open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture" 2>/dev/null
+    echo -e "  Grant ${GREEN}Screen Recording${NC} to 'sunshine', then come back here."
+    echo -e "  Press Enter when done..."
+    read -r
+    # Open Accessibility pane
+    open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility" 2>/dev/null
+    echo -e "  Grant ${GREEN}Accessibility${NC} to 'sunshine', then come back here."
+    echo -e "  Press Enter to start Lumen..."
+    read -r
+fi
+
+echo -e "${GREEN}Starting Lumen...${NC}"
+echo "  Web UI: https://localhost:47990"
+echo ""
 
 SUNSHINE_ASSETS_DIR="$INSTALL_DIR/assets" exec "$BINARY" "$@"
 LAUNCHER
@@ -307,9 +348,8 @@ echo "    lumen"
 echo ""
 echo "  Web UI: https://localhost:47990"
 echo ""
-echo -e "  ${YELLOW}Required macOS permissions (grant when prompted):${NC}"
-echo "    1. Screen Recording  → System Settings > Privacy & Security > Screen Recording"
-echo "    2. Accessibility     → System Settings > Privacy & Security > Accessibility"
+echo -e "  ${GREEN}macOS permissions:${NC} The launcher will walk you through granting"
+echo "    Screen Recording and Accessibility on first run."
 echo ""
 
 if [ "$AMFI_STATUS" = "disabled" ]; then
